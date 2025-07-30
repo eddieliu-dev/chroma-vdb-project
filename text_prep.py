@@ -19,10 +19,10 @@ def generate_rand_time(start, end) -> str:
     return str(start + timedelta(seconds=rand_second))
 
 # Prepare text for storage. 准备储存文本
-text = document_parser.file_reader()
+news = document_parser.file_reader()
 ids = []
 metadatas = []
-for record in text:
+for record in news:
     ids.append(uuid.uuid4())
     metadatas.append(
         {
