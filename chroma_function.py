@@ -1,10 +1,12 @@
 # This file contains all the chroma function that may potentially be in use.
 # Including: create, get, peek, modify and delete collection; count records, etc
 # 此文件包含了chroma db运行将会用到的一些方法
+import uuid
+
 from certifi import where
 from nltk.corpus.reader import documents
 
-import chroma_client
+import chroma_client, document_parser
 from chromadb import GetResult
 from chromadb.types import Collection  # Import the Collection type
 from datetime import datetime
