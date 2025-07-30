@@ -1,3 +1,8 @@
-def file_reader():
+# This file opens and reads a file
+# 此文件用于文件的基础读取
+
+def file_reader() -> str:
     with open("documents_dup_part_1_part_1") as f:
-        print(f.read())
+        news:list[str] = f.read().splitlines()
+        return "\n".join(news)
+        # print(type(f.read()))
