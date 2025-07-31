@@ -1,6 +1,10 @@
-# This file contains all the chroma function that may potentially be in use.
-# Including: create, get, peek, modify and delete collection; count records, etc
-# 此文件包含了chroma db运行将会用到的一些方法
+# chroma_function.py
+#
+# This file contains common functions for using Chroma vector database.
+# It includes creating, retrieving, updating, deleting collections and records.
+#
+# 此文件包含 Chroma 向量数据库的常用操作功能，
+# 包括创建、获取、更新、删除集合与数据等。
 
 from chromadb import GetResult
 from chromadb.types import Collection  # Import the Collection type
@@ -46,6 +50,7 @@ def peek_collection(collection_name) -> GetResult:
     collection = get_collection(collection_name)
     return collection.peek()
 
+
 def query_collection(collection_name, query, query_text, results_include, results_number):
     collection = get_collection(collection_name)
     result = collection.query(
@@ -77,7 +82,7 @@ def count_record(collection_name) -> int:
 
 
 # Add data to a collection. 给指定合集添加数据
-def add_data(collection_name, ids,embeddings, documents, metadatas):
+def add_data(collection_name, ids, embeddings, documents, metadatas):
     collection = get_collection(collection_name)
     collection.add(
         ids=ids,

@@ -1,21 +1,29 @@
-# This is the main file of the project. 此文件是项目的主文件
-# All the operations will eventually run here
+# main.py
+#
+# This file is the main entry point of the project.
+# It reads a text file, extracts embeddings, titles, and keywords using LLM,
+# and adds the processed data to a Chroma vector database.
+# It also supports querying the database based on a user input.
+#
+# 此文件是项目的主入口。
+# 它读取文本文件，使用大语言模型提取向量、标题和关键词，
+# 并将处理后的数据存入 Chroma 向量数据库中。
+# 同时支持根据用户输入查询数据库。
 
 import asyncio
 from chroma import chroma_client, chroma_function
-from llm import llm_embedding, llm_provider
-import document_parser, prompt, text_prep
+from llm import llm_embedding, llm_client
+import prompt, record_helper
 from datetime import datetime
 
 
 async def main():
-
     # chroma_function.delete_collection("news")
     # print(chroma_function.peek_collection("news"))
 
     # 读取文本
     file_name = "data/documents_dup_part_1_part_1_short"
-    news_list = document_parser.file_reader(file_name)
+    news_list = record_helper.file_reader(file_name)
 
     collection_name = "news"
     collection_description = "This collection contains news from 2023."
@@ -28,7 +36,7 @@ async def main():
 
         # llm解析，提取，存入chroma数据库
         for news in news_list:
-            ids = text_prep.generate_rand_id()
+            ids = record_helper.generate_rand_id()
 
             embeddings = llm_embedding.langchain_embed_model.embed_documents(news)
 
@@ -47,22 +55,19 @@ async def main():
 
         # print(chroma_function.peek_collection("news"))
     else:
-        # result = chroma_function.query_collection(collection_name, query, query_text, query_include,result_number)
-        # print(result['metadatas']['title'])
-        # print(result['metadatas']['keywords'][0])
-        # print(result['documents'][0])
-
         query = "有没有名人相关的新闻？"
         query_text = "Query 1"
-        result_include = ["documents", "metadatas"]
+        # result_include = ["documents", "metadatas"]
         result_number = 1
         collection = chroma_function.get_collection(collection_name)
+        # result = chroma_function.query_collection(collection_name, query, query_text, query_include,result_number)
         result = collection.query(
             query_embeddings=llm_embedding.langchain_embed_model.embed_query(query),
             query_texts=[query_text],
             # include=result_include,
             n_results=result_number
         )
+
         # print(result)
         print(result['metadatas'][0][0]['title'])
         print(result['metadatas'][0][0]['keywords'])
