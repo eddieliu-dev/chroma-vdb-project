@@ -40,16 +40,16 @@ async def main():
 
             embeddings = llm_embedding.langchain_embed_model.embed_documents(news)
 
-            filled_title_prompt = llm_provider.fill_prompt(prompt.title_prompt, news)
-            title = str(await llm_provider.call_llama(filled_title_prompt))
+            filled_title_prompt = llm_client.fill_prompt(prompt.title_prompt, news)
+            title = str(await llm_client.call_llama(filled_title_prompt))
 
-            filled_keywords_prompt = llm_provider.fill_prompt(prompt.keywords_prompt, news)
-            keywords = str(await llm_provider.call_llama(filled_keywords_prompt))
+            filled_keywords_prompt = llm_client.fill_prompt(prompt.keywords_prompt, news)
+            keywords = str(await llm_client.call_llama(filled_keywords_prompt))
 
-            created_by = text_prep.generate_rand_name()
-            created_at = text_prep.generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
+            created_by = record_helper.generate_rand_name()
+            created_at = record_helper.generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
 
-            metadatas = text_prep.generate_metadata(title, keywords, created_by, created_at)
+            metadatas = record_helper.generate_metadata(title, keywords, created_by, created_at)
 
             chroma_function.add_data(collection_name, ids, embeddings, news, metadatas)
 
