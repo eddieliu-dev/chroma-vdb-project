@@ -22,8 +22,8 @@ chroma-vdb-project/
 │
 ├── helpers/                    # General-purpose helpers
 │   ├── __init__.py
-│   ├── prompt.py                   # Prompt templates for LLM
-│   └── record_helper.py            # Metadata and document ID utilities
+│   ├── prompt.py               # Prompt templates for LLM
+│   └── record_helper.py        # Metadata and document ID utilities
 │
 ├── llm/                        # LLM API and embedding utilities
 │   ├── __init__.py
