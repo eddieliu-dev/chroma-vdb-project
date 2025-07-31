@@ -20,6 +20,11 @@ chroma-vdb-project/
 │   ├── documents_dup_part_1_part_1
 │   └── documents_dup_part_1_part_1_short
 │
+├── helpers/                    # General-purpose helpers
+│   ├── __init__.py
+│   ├── prompt.py                   # Prompt templates for LLM
+│   └── record_helper.py            # Metadata and document ID utilities
+│
 ├── llm/                        # LLM API and embedding utilities
 │   ├── __init__.py
 │   ├── llm_client.py           # Sends prompt to local LLM (Ollama)
@@ -27,10 +32,9 @@ chroma-vdb-project/
 │
 ├── service/                    # Empty for future improvements
 │
-├── main.py                     # Main entry point
-├── prompt.py                   # Prompt templates for LLM
-├── record_helper.py            # Metadata and document ID utilities
-└── README.md                   # Project documentation
+├── README.md                   # Project documentation
+├── __init__.py
+└── main.py                     # Main entry point
 ```
 
 ---
