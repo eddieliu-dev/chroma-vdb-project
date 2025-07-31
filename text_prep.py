@@ -18,17 +18,19 @@ def generate_rand_time(start, end) -> str:
     rand_second = random.randint(0, int(delta.total_seconds()))
     return str(start + timedelta(seconds=rand_second))
 
-# Prepare text for storage. 准备储存文本
-news = document_parser.file_reader()
-ids = []
-metadatas = []
-for record in news:
-    ids.append(uuid.uuid4())
-    metadatas.append(
-        {
-            "title": "titles to be added with LLM later",
-            "keywords": [], # to be added with LLM later
-            "created_by": generate_rand_name(),
-            "created_at": generate_rand_time(datetime(2024,1,1), datetime(2025,1,1))
-        }
-    )
+# Prepare text for storage. 准备储存文本 封装成方法
+def records_prep() -> list:
+    records = document_parser.file_reader()
+    return records
+
+def generate_rand_id() -> uuid:
+    return uuid.uuid4()
+
+def generate_metadata() -> dict:
+    metadata = {
+        "title": "titles to be added with LLM later",
+        "keywords": [],  # to be added with LLM later
+        "created_by": generate_rand_name(),
+        "created_at": generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
+    }
+    return metadata

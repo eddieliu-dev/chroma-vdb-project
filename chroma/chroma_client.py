@@ -4,8 +4,4 @@
 
 import chromadb
 
-client = chromadb.CloudClient(
-    api_key='ck-HdWFV3R2VLngyLL8NQ3dpf4FCzUu65DJxs71YgVAuYGU',
-    tenant='57dca400-ce03-4b94-849c-87be7cb2a8b0',
-    database='Test'
-)
+client = chromadb.PersistentClient(path="./chroma_data")

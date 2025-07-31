@@ -1,19 +1,11 @@
 # This file is configuration of the embedding model.
-# 此文件是embedding模型的基础配置
+# 此文件是embedding模型的基础配置 用doubao方式调用
 
-from sentence_transformers import SentenceTransformer
-import document_parser
+from langchain_ollama import OllamaEmbeddings, ChatOllama
 
-model = SentenceTransformer("BAAI/bge-large-zh-v1.5")
+# langchain_llm = ChatOllama(base_url="http://127.0.0.1:11434",
+#                            model="bge-m3",
+#                            temperature=0.4,
+#                            num_ctx=4096)
 
-# sentences = [
-#     # "The weather is lovely today.",
-#     # "It's so sunny outside!",
-#     # "He drove to the stadium."
-#
-# ]
-# embeddings = model.encode(sentences)
-
-# similarities = model.similarity(embeddings, embeddings)
-# print(similarities.shape)
-# [3, 3]
+langchain_embed_model = OllamaEmbeddings(model="bge-m3")

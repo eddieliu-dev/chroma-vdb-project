@@ -2,7 +2,7 @@
 # Including: create, get, peek, modify and delete collection; count records, etc
 # 此文件包含了chroma db运行将会用到的一些方法
 
-import chroma_client, document_parser
+import chroma_client
 from chromadb import GetResult
 from chromadb.types import Collection  # Import the Collection type
 from datetime import datetime
@@ -11,11 +11,11 @@ from datetime import datetime
 # If there is not a collection with name "collection_name", create one.
 # If there is, get the collection.
 # 如果没有叫collection_name的集合-创建；如果有-获取
-def create_collection(collection_name, description) -> Collection:
+def create_collection(collection_name, description, embedding_function) -> Collection:
     if collection_name not in chroma_client.client.list_collections(limit=10):
         collection = chroma_client.client.get_or_create_collection(
             name=collection_name,
-            embedding_function=None,  # add later
+            embedding_function=embedding_function,
             metadata={
                 "description": description,
                 "created": str(datetime.now())
@@ -64,10 +64,11 @@ def count_record(collection_name) -> int:
 
 
 # Add data to a collection. 给指定合集添加数据
-def add_data(collection_name, ids, documents, metadatas):
+def add_data(collection_name, ids,embeddings, documents, metadatas):
     collection = get_collection(collection_name)
     collection.add(
         ids=ids,
+        embeddings=embeddings,
         documents=documents,
         metadatas=metadatas
     )
