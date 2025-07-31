@@ -1,19 +1,21 @@
 # This is the main file of the project. 此文件是项目的主文件
 # All the operations will eventually run here
 
+import asyncio
 from chroma import chroma_client, chroma_function
 from llm import llm_embedding, llm_provider
 import document_parser, prompt, text_prep
 from datetime import datetime
 
 
-def main():
+async def main():
 
     # chroma_function.delete_collection("news")
     # print(chroma_function.peek_collection("news"))
 
     # 读取文本
-    news_list = document_parser.file_reader()
+    file_name = "data/documents_dup_part_1_part_1_short"
+    news_list = document_parser.file_reader(file_name)
 
     # 创建collection
     collection_name = "news"
@@ -28,10 +30,10 @@ def main():
         embeddings = llm_embedding.langchain_embed_model.embed_documents(news)
 
         filled_title_prompt = llm_provider.fill_prompt(prompt.title_prompt, news)
-        title = llm_provider.call_llama(filled_title_prompt)
+        title = str(await llm_provider.call_llama(filled_title_prompt))
 
         filled_keywords_prompt = llm_provider.fill_prompt(prompt.keywords_prompt, news)
-        keywords = llm_provider.call_llama(filled_keywords_prompt)
+        keywords = str(await llm_provider.call_llama(filled_keywords_prompt))
 
         created_by = text_prep.generate_rand_name()
         created_at = text_prep.generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
@@ -44,4 +46,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

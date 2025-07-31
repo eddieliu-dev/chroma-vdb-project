@@ -8,4 +8,4 @@ from langchain_ollama import OllamaEmbeddings, ChatOllama
 #                            temperature=0.4,
 #                            num_ctx=4096)
 
-langchain_embed_model = OllamaEmbeddings(model="bge-m3")
+langchain_embed_model = OllamaEmbeddings(model="bge-m3:latest")
