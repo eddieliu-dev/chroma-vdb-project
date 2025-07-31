@@ -23,14 +23,14 @@ def records_prep() -> list:
     records = document_parser.file_reader()
     return records
 
-def generate_rand_id() -> uuid:
-    return uuid.uuid4()
+def generate_rand_id() -> str:
+    return str(uuid.uuid4())
 
-def generate_metadata() -> dict:
+def generate_metadata(title, keywords, who, when) -> dict:
     metadata = {
-        "title": "titles to be added with LLM later",
-        "keywords": [],  # to be added with LLM later
-        "created_by": generate_rand_name(),
-        "created_at": generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
+        "title": title,
+        "keywords": keywords,  # to be added with LLM later
+        "created_by": who,
+        "created_at": when
     }
     return metadata

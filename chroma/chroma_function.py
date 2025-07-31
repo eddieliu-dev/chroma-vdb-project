@@ -2,20 +2,22 @@
 # Including: create, get, peek, modify and delete collection; count records, etc
 # 此文件包含了chroma db运行将会用到的一些方法
 
-import chroma_client
 from chromadb import GetResult
 from chromadb.types import Collection  # Import the Collection type
 from datetime import datetime
+# noinspection PyUnresolvedReferences
+from chroma import chroma_client
 
 
 # If there is not a collection with name "collection_name", create one.
 # If there is, get the collection.
 # 如果没有叫collection_name的集合-创建；如果有-获取
-def create_collection(collection_name, description, embedding_function) -> Collection:
+def create_collection(collection_name, description) -> Collection:
     if collection_name not in chroma_client.client.list_collections(limit=10):
         collection = chroma_client.client.get_or_create_collection(
             name=collection_name,
-            embedding_function=embedding_function,
+            # 'OllamaEmbeddings' object has no attribute 'name'
+            # embedding_function=embedding_function,
             metadata={
                 "description": description,
                 "created": str(datetime.now())
