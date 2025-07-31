@@ -7,6 +7,7 @@ from chromadb.types import Collection  # Import the Collection type
 from datetime import datetime
 # noinspection PyUnresolvedReferences
 from chroma import chroma_client
+from llm import llm_embedding
 
 
 # If there is not a collection with name "collection_name", create one.
@@ -44,6 +45,16 @@ def get_collection(collection_name) -> Collection:
 def peek_collection(collection_name) -> GetResult:
     collection = get_collection(collection_name)
     return collection.peek()
+
+def query_collection(collection_name, query, query_text, results_include, results_number):
+    collection = get_collection(collection_name)
+    result = collection.query(
+        query_embeddings=llm_embedding.langchain_embed_model.embed_query(query),
+        query_texts=[query_text],
+        include=results_include,
+        n_results=results_number
+    )
+    return result
 
 
 # Change the name of the collection. 给集合改名
