@@ -55,7 +55,7 @@ async def main():
 
         # print(chroma_function.peek_collection("news"))
     else:
-        query = "有没有名人相关的新闻？"
+        query = "有没有美国相关的新闻?"
         query_text = "Query 1"
         # result_include = ["documents", "metadatas"]
         result_number = 1
