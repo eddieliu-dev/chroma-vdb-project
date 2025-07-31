@@ -11,9 +11,9 @@
 # 同时支持根据用户输入查询数据库。
 
 import asyncio
-from chroma import chroma_client, chroma_function
+from chroma import chroma_function
 from llm import llm_embedding, llm_client
-import prompt, record_helper
+from helpers import prompt, record_helper
 from datetime import datetime
 
 

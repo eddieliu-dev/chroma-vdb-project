@@ -30,8 +30,7 @@ chroma-vdb-project/
 ├── main.py                     # Main entry point
 ├── prompt.py                   # Prompt templates for LLM
 ├── record_helper.py            # Metadata and document ID utilities
-├── README.md                   # Project documentation
-└── .venv/                      # Virtual environment (excluded from Git)
+└── README.md                   # Project documentation
 ```
 
 ---
