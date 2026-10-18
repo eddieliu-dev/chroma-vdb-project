@@ -1,78 +1,89 @@
-# main.py
-#
-# This file is the main entry point of the project.
-# It reads a text file, extracts embeddings, titles, and keywords using LLM,
-# and adds the processed data to a Chroma vector database.
-# It also supports querying the database based on a user input.
-#
-# 此文件是项目的主入口。
-# 它读取文本文件，使用大语言模型提取向量、标题和关键词，
-# 并将处理后的数据存入 Chroma 向量数据库中。
-# 同时支持根据用户输入查询数据库。
+"""Ingest documents and run semantic searches against local Chroma storage."""
 
+import argparse
 import asyncio
+import json
+import sys
+
+import aiohttp
+import httpx
+from chromadb.errors import ChromaError
+from ollama import ResponseError
+
 from chroma import chroma_function
-from llm import llm_embedding, llm_client
-from helpers import prompt, record_helper
-from datetime import datetime
+from config import CHROMA_COLLECTION, OLLAMA_TIMEOUT, ROOT
+from helpers import record_helper
+from llm import llm_client, llm_embedding
 
 
-async def main():
-    # chroma_function.delete_collection("news")
-    # print(chroma_function.peek_collection("news"))
-
-    # 读取文本
-    file_name = "data/documents_dup_part_1_part_1_short"
-    news_list = record_helper.file_reader(file_name)
-
-    collection_name = "news"
-    collection_description = "This collection contains news from 2023."
-
-    user_command = input("Add or Query? ")
-    if user_command.casefold() == "add":
-        # 创建collection
-        # embedding_function = llm_embedding.langchain_embed_model
-        chroma_function.create_collection(collection_name, collection_description)
-
-        # llm解析，提取，存入chroma数据库
-        for news in news_list:
-            ids = record_helper.generate_rand_id()
-
-            embeddings = llm_embedding.langchain_embed_model.embed_documents(news)
-
-            filled_title_prompt = llm_client.fill_prompt(prompt.title_prompt, news)
-            title = str(await llm_client.call_llama(filled_title_prompt))
-
-            filled_keywords_prompt = llm_client.fill_prompt(prompt.keywords_prompt, news)
-            keywords = str(await llm_client.call_llama(filled_keywords_prompt))
-
-            created_by = record_helper.generate_rand_name()
-            created_at = record_helper.generate_rand_time(datetime(2024, 1, 1), datetime(2025, 1, 1))
-
-            metadatas = record_helper.generate_metadata(title, keywords, created_by, created_at)
-
-            chroma_function.add_data(collection_name, ids, embeddings, news, metadatas)
-
-        # print(chroma_function.peek_collection("news"))
-    else:
-        query = "有没有美国相关的新闻?"
-        query_text = "Query 1"
-        # result_include = ["documents", "metadatas"]
-        result_number = 1
-        collection = chroma_function.get_collection(collection_name)
-        # result = chroma_function.query_collection(collection_name, query, query_text, query_include,result_number)
-        result = collection.query(
-            query_embeddings=llm_embedding.langchain_embed_model.embed_query(query),
-            query_texts=[query_text],
-            # include=result_include,
-            n_results=result_number
-        )
-
-        # print(result)
-        print(result['metadatas'][0][0]['title'])
-        print(result['metadatas'][0][0]['keywords'])
-        print(result['documents'][0])
+def positive_int(value: str) -> int:
+    result = int(value)
+    if result < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return result
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    ingest = commands.add_parser("ingest", help="Enrich and upsert one document per line")
+    ingest.add_argument("--file", default=str(ROOT / "data/sample.txt"))
+    query = commands.add_parser("query", help="Search documents by meaning")
+    query.add_argument("text", help="Natural-language search query")
+    query.add_argument("--limit", type=positive_int, default=3)
+    count = commands.add_parser("count", help="Count stored documents")
+    for command in (ingest, query, count):
+        command.add_argument("--collection", default=CHROMA_COLLECTION)
+    return parser
+
+
+async def ingest_documents(file_name: str, collection_name: str) -> int:
+    documents = record_helper.file_reader(file_name)
+    if not documents:
+        raise ValueError("The input file contains no documents.")
+    chroma_function.create_collection(collection_name)
+    timeout = aiohttp.ClientTimeout(total=OLLAMA_TIMEOUT)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        for number, document in enumerate(documents, start=1):
+            metadata = await llm_client.extract_metadata(document, session)
+            # Pass a list of documents, not a string of characters.
+            embeddings = await llm_embedding.langchain_embed_model.aembed_documents([document])
+            chroma_function.upsert_document(
+                collection_name, record_helper.document_id(document), embeddings[0], document,
+                record_helper.generate_metadata(**metadata, source=str(file_name)),
+            )
+            print(f"[{number}/{len(documents)}] {metadata['title']}", file=sys.stderr)
+    return chroma_function.count_record(collection_name)
+
+
+def run(args: argparse.Namespace):
+    if args.command == "ingest":
+        return {"collection": args.collection, "count": asyncio.run(
+            ingest_documents(args.file, args.collection)
+        )}
+    if args.command == "count":
+        return {"collection": args.collection, "count": chroma_function.count_record(args.collection)}
+    if not args.text.strip():
+        raise ValueError("The search query must not be blank.")
+    if not chroma_function.count_record(args.collection):
+        return []
+    embedding = llm_embedding.langchain_embed_model.embed_query(args.text)
+    results = chroma_function.query_collection(args.collection, embedding, args.limit)
+    for result in results:
+        result["keywords"] = json.loads(result["keywords"])
+    return results
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    try:
+        result = run(args)
+    except (OSError, ValueError, RuntimeError, httpx.HTTPError, ChromaError, ResponseError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
